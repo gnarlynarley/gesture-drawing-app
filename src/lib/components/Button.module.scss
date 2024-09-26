@@ -1,0 +1,14 @@
+.button {
+  background-color: var(--color-accent);
+  padding: 0.3em 0.5em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+
+  &.isPrimary {
+    background-color: var(--color-primary);
+    color: var(--color-primary-text);
+  }
+}

@@ -1,0 +1,91 @@
+*,
+*:before,
+*:after {
+  margin: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --color-background: rgb(24, 24, 24);
+  --color-text: rgb(205, 205, 205);
+  --color-background-300: color-mix(in srgb, var(--color-background), white 5%);
+  --color-accent: color-mix(in srgb, var(--color-background), white 30%);
+  --color-primary: rgb(255, 204, 0);
+  --color-primary-text: black;
+  --gap: 0.5em;
+}
+
+html {
+  font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  height: 100%;
+  background: var(--color-background);
+  color: var(--color-text);
+}
+
+body {
+  height: 100%;
+}
+
+#root {
+  display: contents;
+}
+
+button {
+  all: unset;
+  font: inherit;
+  color: inherit;
+}
+
+.wrapper {
+  height: 100%;
+  display: grid;
+  grid-template:
+    'toolbar' auto
+    'image' 1fr;
+  background-size: 40px 40px;
+  background-image: linear-gradient(
+      to right,
+      var(--color-background-300) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, var(--color-background-300) 1px, transparent 1px);
+}
+
+.toolbar {
+  grid-area: toolbar;
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  background: var(--color-background-300);
+  padding: 1em;
+}
+
+.image {
+  position: relative;
+  grid-area: image;
+  padding: 1em;
+
+  .is-grayscale & {
+    filter: grayscale(1);
+  }
+
+  .is-flipped-horizontal & {
+    scale: -1 1;
+  }
+  .is-flipped-vertical & {
+    scale: 1 -1;
+  }
+  .is-flipped-horizontal.is-flipped-vertical & {
+    scale: -1 -1;
+  }
+
+  img {
+    position: absolute;
+    top: var(--gap);
+    top: var(--gap);
+    width: calc(100% - 2 * var(--gap));
+    height: calc(100% - 2 * var(--gap));
+    object-fit: contain;
+  }
+}
