@@ -5,50 +5,12 @@
   box-sizing: border-box;
 }
 
-:root {
-  --color-background: rgb(24, 24, 24);
-  --color-text: rgb(205, 205, 205);
-  --color-background-300: color-mix(in srgb, var(--color-background), white 5%);
-  --color-accent: color-mix(in srgb, var(--color-background), white 30%);
-  --color-primary: rgb(255, 204, 0);
-  --color-primary-text: black;
-  --color-success: rgb(122, 215, 0);
-  --gap: 1em;
-}
-
-html {
-  font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    Roboto, 'Helvetica Neue', Arial, sans-serif;
-  height: 100%;
-  background: var(--color-background);
-  color: var(--color-text);
-}
-
-body {
-  height: 100%;
-}
-
-#root {
-  display: contents;
-}
-
-input {
-  display: block;
-  font: inherit;
-}
-
-button {
-  all: unset;
-  font: inherit;
-  color: inherit;
-}
-
 .wrapper {
   height: 100%;
   display: grid;
   grid-template:
     'toolbar' auto
-    'image' 1fr
+    'content' 1fr
     'progress' auto;
   background-size: 40px 40px;
   background-image: linear-gradient(
@@ -69,6 +31,12 @@ button {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
 
   .divider {
+    height: 1em;
+    width: 5px;
+    background: var(--color-accent);
+  }
+
+  .spacer {
     width: 100%;
   }
 
@@ -84,10 +52,26 @@ button {
   }
 }
 
+.content {
+  grid-area: content;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.overview {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: var(--gap);
+  padding: var(--gap);
+}
+
 .image {
   position: relative;
   grid-area: image;
   padding: 1em;
+  height: 100%;
+  width: 100%;
 
   .is-grayscale & {
     filter: grayscale(1);

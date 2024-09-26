@@ -3,11 +3,13 @@ import { readDir, readFile } from '@tauri-apps/plugin-fs';
 import * as path from '@tauri-apps/api/path';
 import React from 'react';
 import cx from './lib/utils/cx';
-import './App.scss';
 import Button from './lib/components/Button';
 import ProgressBar from './lib/components/ProgressBar';
 import Modal from './lib/components/Modal';
 import Input from './lib/components/Input';
+import './App.scss';
+import useKeyBind from './lib/hooks/useKeyBind';
+import playDing from './lib/utils/playDing';
 
 interface FileEntry {
   pathname: string;
@@ -114,36 +116,92 @@ function ChangeMaxTimeModal({
   );
 }
 
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export default function App() {
+  const [view, setView] = React.useState<'app' | 'intermission' | 'overview'>(
+    'app'
+  );
   const [loading, setLoading] = React.useState<false | 'directory' | 'file'>(
     false
   );
   const [showMaxTimeModal, setShowMaxTimeModal] = React.useState(false);
+  const [intermissionSeconds, setIntermissionSeconds] = React.useState(0);
   const [maxTime, setMaxTime] = React.useState(120);
   const [files, setFiles] = React.useState<FileEntry[]>([]);
+  const [history, setHistory] = React.useState<string[]>([]);
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
+  const autoplay = useSetting();
   const grayscale = useSetting();
   const flippedHorizontal = useSetting();
   const flippedVertical = useSetting();
   const timer = useTimer();
+  const isOverTime = timer.time >= maxTime;
+  const hasFilesLoaded = files.length > 0;
+  const formattedTime = isOverTime
+    ? formatTime(timer.time)
+    : formatTime(maxTime - timer.time);
 
   const changeMaxTime = () => {
     setShowMaxTimeModal(true);
   };
 
-  const getRandomImage = async (_files = files) => {
+  const nextRandomImage = async (skip = false, _files = files) => {
     try {
-      setLoading('file');
-      const randomIndex = Math.floor(Math.random() * _files.length);
-      const randomPath = _files[randomIndex];
-      const pathname = await path.join(randomPath.pathname, randomPath.name);
-      const buffer = await readFile(pathname);
-      const blob = new Blob([buffer]);
-      const url = URL.createObjectURL(blob);
-      setImageSrc(url);
       timer.reset();
+      timer.pause();
+
+      if (!skip && imageSrc) {
+        setHistory((prev) => prev.concat(imageSrc));
+      }
+      const [url] = await Promise.all([
+        Promise.resolve().then(async () => {
+          const randomIndex = Math.floor(Math.random() * _files.length);
+          const randomPath = _files[randomIndex];
+          if (!randomPath) return null;
+          const pathname = await path.join(
+            randomPath.pathname,
+            randomPath.name
+          );
+          const buffer = await readFile(pathname);
+          const blob = new Blob([buffer]);
+          const url = URL.createObjectURL(blob);
+
+          return url;
+        }),
+        Promise.resolve().then(async () => {
+          if (autoplay.value && !skip) {
+            setView('intermission');
+            setIntermissionSeconds(3);
+            await sleep(1000);
+            setIntermissionSeconds(2);
+            await sleep(1000);
+            setIntermissionSeconds(1);
+            await sleep(1000);
+          }
+        }),
+      ]);
+      setView('app');
+      setLoading('file');
+      setImageSrc(url);
+      timer.play();
     } finally {
       setLoading(false);
+    }
+  };
+
+  const changeView = (view: 'app' | 'overview') => {
+    switch (view) {
+      case 'app':
+        setView('app');
+        timer.play();
+        break;
+      case 'overview':
+        setView('overview');
+        timer.pause();
+        break;
     }
   };
 
@@ -154,17 +212,11 @@ export default function App() {
       if (!selected) return;
       const files = await recursiveFileRead(selected);
       setFiles(files);
-      getRandomImage(files);
+      nextRandomImage(false, files);
     } finally {
       setLoading(false);
     }
   };
-
-  const isOverTime = timer.time > maxTime;
-  const hasFilesLoaded = files.length > 0;
-  const formattedTime = isOverTime
-    ? formatTime(timer.time)
-    : formatTime(maxTime - timer.time);
 
   const wrapperClassName = cx(
     'wrapper',
@@ -173,6 +225,15 @@ export default function App() {
     flippedVertical.value && 'is-flipped-vertical',
     isOverTime && 'is-over-time'
   );
+
+  useKeyBind('spacebar', () => timer.toggle());
+
+  React.useEffect(() => {
+    if (autoplay.value && isOverTime) {
+      nextRandomImage();
+      playDing();
+    }
+  }, [autoplay.value, isOverTime]);
 
   return (
     <>
@@ -196,47 +257,90 @@ export default function App() {
           {hasFilesLoaded && (
             <>
               <Button
-                onClick={() => getRandomImage()}
+                onClick={() => nextRandomImage()}
                 loading={loading === 'file'}
               >
-                get random
-              </Button>
-              <Button onClick={grayscale.toggle} primary={grayscale.value}>
-                grayscale
+                Next
               </Button>
               <Button
-                onClick={flippedHorizontal.toggle}
-                primary={flippedHorizontal.value}
+                onClick={() => nextRandomImage(true)}
+                loading={loading === 'file'}
               >
-                flip horizontal
+                Skip
               </Button>
               <Button
-                onClick={flippedVertical.toggle}
-                primary={flippedVertical.value}
+                onClick={() => autoplay.toggle()}
+                primary={autoplay.value}
               >
-                flip vertical
+                Autoplay
               </Button>
+              <Button
+                onClick={() =>
+                  changeView(view === 'overview' ? 'app' : 'overview')
+                }
+              >
+                Show {view === 'overview' ? 'Back to app' : 'Overview'}
+              </Button>
+
               <span className="divider" />
-              <div className="time">
-                <span>{formattedTime}</span>
-                <span>/</span>
-                <button type="button" onClick={changeMaxTime}>
-                  {formatTime(maxTime)}
-                </button>
-              </div>
-              <Button onClick={timer.toggle} primary={timer.playing}>
-                Play/Pause
-              </Button>
-              <Button onClick={timer.reset}>Reset</Button>
+
+              {view === 'app' && (
+                <>
+                  <Button onClick={grayscale.toggle} primary={grayscale.value}>
+                    grayscale
+                  </Button>
+                  <Button
+                    onClick={flippedHorizontal.toggle}
+                    primary={flippedHorizontal.value}
+                  >
+                    flip horizontal
+                  </Button>
+                  <Button
+                    onClick={flippedVertical.toggle}
+                    primary={flippedVertical.value}
+                  >
+                    flip vertical
+                  </Button>
+                  <span className="spacer" />
+                  <button
+                    type="button"
+                    onClick={changeMaxTime}
+                    className="time"
+                  >
+                    <span>{formattedTime}</span>
+                    <span>/</span>
+                    <span onClick={changeMaxTime}>{formatTime(maxTime)}</span>
+                  </button>
+                  <Button onClick={timer.toggle} primary={timer.playing}>
+                    Play/Pause
+                  </Button>
+                  <Button onClick={timer.reset}>Reset</Button>
+                </>
+              )}
+              {view === 'overview' && (
+                <Button onClick={() => setHistory([])}>Clear history</Button>
+              )}
             </>
           )}
         </div>
 
-        {imageSrc && (
-          <div className="image">
-            <img src={imageSrc} alt="selected" />
-          </div>
-        )}
+        <div className="content">
+          {view === 'app' && imageSrc && (
+            <div className="image">
+              <img src={imageSrc} alt="selected" />
+            </div>
+          )}
+          {view === 'intermission' && (
+            <h1>Next coming in {intermissionSeconds}</h1>
+          )}
+          {view === 'overview' && (
+            <div className="overview">
+              {history.map((url, i) => (
+                <img src={url} key={i} alt={`history-${i}`} />
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="progress-bar">
           <ProgressBar active={timer.playing} progress={timer.time / maxTime} />
