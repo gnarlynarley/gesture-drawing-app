@@ -1,0 +1,15 @@
+.wrapper {
+  --progress: 0;
+  height: 6px;
+  background: var(--color-background-300);
+}
+.bar {
+  height: 100%;
+  background: var(--color-accent);
+  scale: var(--progress) 1;
+  transform-origin: top left;
+
+  .wrapper.isActive & {
+    background: var(--color-primary);
+  }
+}
