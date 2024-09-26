@@ -1,0 +1,24 @@
+.container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--color-background), transparent 50%);
+}
+
+.modal {
+  background: var(--color-background);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  padding: var(--gap);
+  border-radius: 0.3em;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  padding-top: var(--gap);
+}

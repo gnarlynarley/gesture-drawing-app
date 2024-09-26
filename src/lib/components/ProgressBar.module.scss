@@ -12,4 +12,8 @@
   .wrapper.isActive & {
     background: var(--color-primary);
   }
+
+  .wrapper.isDone & {
+    background: var(--color-success);
+  }
 }

@@ -4,15 +4,25 @@ import $ from './Button.module.scss';
 type Props = React.PropsWithChildren<{
   primary?: boolean;
   onClick?: () => void;
+  type?: 'submit' | 'reset' | 'button';
+  loading?: boolean;
 }>;
 
-export default function Button({ onClick, primary, children }: Props) {
+export default function Button({
+  type = 'button',
+  onClick,
+  primary,
+  children,
+  loading,
+}: Props) {
   return (
     <button
-      className={cx($.button, primary && $.isPrimary)}
+      type={type}
+      className={cx($.button, primary && $.isPrimary, loading && $.isLoading)}
       onClick={() => onClick?.()}
     >
-      {children}
+      {loading && <span className={$.spinner} />}
+      <span className={$.inner}>{children}</span>
     </button>
   );
 }

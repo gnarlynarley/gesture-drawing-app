@@ -7,9 +7,10 @@ type Props = {
 };
 
 export default function ProgressBar({ active, progress }: Props) {
+  const isDone = progress >= 1;
   return (
     <div
-      className={cx($.wrapper, active && $.isActive)}
+      className={cx($.wrapper, active && $.isActive, isDone && $.isDone)}
       style={{ ['--progress' as any]: Math.min(Math.max(progress, 0), 1) }}
     >
       <div className={$.bar} />

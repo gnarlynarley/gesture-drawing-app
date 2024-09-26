@@ -12,6 +12,7 @@
   --color-accent: color-mix(in srgb, var(--color-background), white 30%);
   --color-primary: rgb(255, 204, 0);
   --color-primary-text: black;
+  --color-success: rgb(122, 215, 0);
   --gap: 1em;
 }
 
@@ -31,6 +32,11 @@ body {
   display: contents;
 }
 
+input {
+  display: block;
+  font: inherit;
+}
+
 button {
   all: unset;
   font: inherit;
@@ -42,7 +48,8 @@ button {
   display: grid;
   grid-template:
     'toolbar' auto
-    'image' 1fr;
+    'image' 1fr
+    'progress' auto;
   background-size: 40px 40px;
   background-image: linear-gradient(
       to right,
@@ -68,6 +75,8 @@ button {
   .time {
     opacity: 0.5;
     font-family: monospace;
+    display: flex;
+    gap: 0.2em;
 
     .is-over-time & {
       color: red;
@@ -108,4 +117,5 @@ button {
 .progress-bar {
   padding: var(--gap);
   padding-top: 0;
+  grid-area: progress;
 }

@@ -6,6 +6,8 @@ import cx from './lib/utils/cx';
 import './App.scss';
 import Button from './lib/components/Button';
 import ProgressBar from './lib/components/ProgressBar';
+import Modal from './lib/components/Modal';
+import Input from './lib/components/Input';
 
 interface FileEntry {
   pathname: string;
@@ -85,8 +87,39 @@ function formatTime(time: number) {
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 }
 
+function ChangeMaxTimeModal({
+  initialMaxTime,
+  onSubmit,
+  onCancel,
+}: {
+  initialMaxTime: number;
+  onSubmit(value: number): void;
+  onCancel(): void;
+}) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  return (
+    <Modal
+      title="Change time duration"
+      onSubmit={() => onSubmit(inputRef.current!.valueAsNumber)}
+      onCancel={onCancel}
+    >
+      <Input
+        type="number"
+        ref={inputRef}
+        label="Time duration (in seconds)"
+        defaultValue={initialMaxTime}
+      />
+    </Modal>
+  );
+}
+
 export default function App() {
-  const maxTime = 120;
+  const [loading, setLoading] = React.useState<false | 'directory' | 'file'>(
+    false
+  );
+  const [showMaxTimeModal, setShowMaxTimeModal] = React.useState(false);
+  const [maxTime, setMaxTime] = React.useState(120);
   const [files, setFiles] = React.useState<FileEntry[]>([]);
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
   const grayscale = useSetting();
@@ -94,23 +127,37 @@ export default function App() {
   const flippedVertical = useSetting();
   const timer = useTimer();
 
+  const changeMaxTime = () => {
+    setShowMaxTimeModal(true);
+  };
+
   const getRandomImage = async (_files = files) => {
-    const randomIndex = Math.floor(Math.random() * _files.length);
-    const randomPath = _files[randomIndex];
-    const pathname = await path.join(randomPath.pathname, randomPath.name);
-    const buffer = await readFile(pathname);
-    const blob = new Blob([buffer]);
-    const url = URL.createObjectURL(blob);
-    setImageSrc(url);
-    timer.reset();
+    try {
+      setLoading('file');
+      const randomIndex = Math.floor(Math.random() * _files.length);
+      const randomPath = _files[randomIndex];
+      const pathname = await path.join(randomPath.pathname, randomPath.name);
+      const buffer = await readFile(pathname);
+      const blob = new Blob([buffer]);
+      const url = URL.createObjectURL(blob);
+      setImageSrc(url);
+      timer.reset();
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openFolder = async () => {
-    const selected = await open({ directory: true });
-    if (!selected) return;
-    const files = await recursiveFileRead(selected);
-    setFiles(files);
-    getRandomImage(files);
+    try {
+      setLoading('directory');
+      const selected = await open({ directory: true });
+      if (!selected) return;
+      const files = await recursiveFileRead(selected);
+      setFiles(files);
+      getRandomImage(files);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const isOverTime = timer.time > maxTime;
@@ -128,48 +175,73 @@ export default function App() {
   );
 
   return (
-    <div className={wrapperClassName}>
-      <div className="toolbar">
-        <Button onClick={openFolder}>
-          {hasFilesLoaded ? 'Change directory' : 'Set directory'}
-        </Button>
-        {hasFilesLoaded && (
-          <>
-            <Button onClick={() => getRandomImage()}>get random</Button>
-            <Button onClick={grayscale.toggle} primary={grayscale.value}>
-              grayscale
-            </Button>
-            <Button
-              onClick={flippedHorizontal.toggle}
-              primary={flippedHorizontal.value}
-            >
-              flip horizontal
-            </Button>
-            <Button
-              onClick={flippedVertical.toggle}
-              primary={flippedVertical.value}
-            >
-              flip vertical
-            </Button>
-            <span className="divider" />
-            <span className="time">{formattedTime}</span>
-            <Button onClick={timer.toggle} primary={timer.playing}>
-              Play/Pause
-            </Button>
-            <Button onClick={timer.reset}>Reset</Button>
-          </>
-        )}
-      </div>
-
-      {imageSrc && (
-        <div className="image">
-          <img src={imageSrc} alt="selected" />
-        </div>
+    <>
+      {showMaxTimeModal && (
+        <ChangeMaxTimeModal
+          initialMaxTime={maxTime}
+          onSubmit={(value) => {
+            setShowMaxTimeModal(false);
+            setMaxTime(value);
+          }}
+          onCancel={() => {
+            setShowMaxTimeModal(false);
+          }}
+        />
       )}
+      <div className={wrapperClassName}>
+        <div className="toolbar">
+          <Button onClick={openFolder} loading={loading === 'directory'}>
+            {hasFilesLoaded ? 'Change directory' : 'Set directory'}
+          </Button>
+          {hasFilesLoaded && (
+            <>
+              <Button
+                onClick={() => getRandomImage()}
+                loading={loading === 'file'}
+              >
+                get random
+              </Button>
+              <Button onClick={grayscale.toggle} primary={grayscale.value}>
+                grayscale
+              </Button>
+              <Button
+                onClick={flippedHorizontal.toggle}
+                primary={flippedHorizontal.value}
+              >
+                flip horizontal
+              </Button>
+              <Button
+                onClick={flippedVertical.toggle}
+                primary={flippedVertical.value}
+              >
+                flip vertical
+              </Button>
+              <span className="divider" />
+              <div className="time">
+                <span>{formattedTime}</span>
+                <span>/</span>
+                <button type="button" onClick={changeMaxTime}>
+                  {formatTime(maxTime)}
+                </button>
+              </div>
+              <Button onClick={timer.toggle} primary={timer.playing}>
+                Play/Pause
+              </Button>
+              <Button onClick={timer.reset}>Reset</Button>
+            </>
+          )}
+        </div>
 
-      <div className="progress-bar">
-        <ProgressBar active={timer.playing} progress={timer.time / 120} />
+        {imageSrc && (
+          <div className="image">
+            <img src={imageSrc} alt="selected" />
+          </div>
+        )}
+
+        <div className="progress-bar">
+          <ProgressBar active={timer.playing} progress={timer.time / maxTime} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }

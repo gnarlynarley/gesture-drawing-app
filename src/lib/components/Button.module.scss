@@ -1,4 +1,5 @@
 .button {
+  position: relative;
   background-color: var(--color-accent);
   padding: 0.3em 0.5em;
   border: none;
@@ -11,5 +12,33 @@
   &.isPrimary {
     background-color: var(--color-primary);
     color: var(--color-primary-text);
+  }
+}
+
+.spinner {
+  width: 1.5em;
+  height: 1.5em;
+  border-radius: 100%;
+  border: 3px solid currentColor;
+  border-top-color: transparent;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+.inner {
+  .button.isLoading & {
+    opacity: 0;
   }
 }
