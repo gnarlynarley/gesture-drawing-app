@@ -4,9 +4,9 @@
   "version": "0.3.0",
   "identifier": "com.gesture-drawing.app",
   "build": {
-    "beforeDevCommand": "yarn dev",
+    "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "yarn build",
+    "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },
   "app": {
