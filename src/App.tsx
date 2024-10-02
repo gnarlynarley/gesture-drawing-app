@@ -25,6 +25,7 @@ import Input from './lib/components/Input';
 import './App.scss';
 import useKeyBind from './lib/hooks/useKeyBind';
 import playDing from './lib/utils/playDing';
+import useTimer from './lib/hooks/useTimer';
 
 interface FileEntry {
   pathname: string;
@@ -69,33 +70,6 @@ function useSetting() {
   const toggle = () => setValue(!value);
 
   return { value, toggle };
-}
-
-function useTimer() {
-  const [time, setTime] = React.useState(0);
-  const [playing, setPlaying] = React.useState(false);
-  const play = () => setPlaying(true);
-  const pause = () => setPlaying(false);
-  const toggle = () => setPlaying(!playing);
-  const reset = () => {
-    setTime(0);
-  };
-
-  React.useEffect(() => {
-    let interval: number | null = null;
-
-    if (playing) {
-      interval = setInterval(() => {
-        setTime((time) => time + 1);
-      }, 1000);
-    }
-
-    return () => {
-      interval !== null && clearInterval(interval);
-    };
-  }, [playing]);
-
-  return { time, playing, toggle, reset, play, pause };
 }
 
 function formatTime(time: number) {
@@ -318,21 +292,21 @@ export default function App() {
                     primary={grayscale.value}
                     icon={<Palette />}
                   >
-                    grayscale
+                    Grayscale
                   </Button>
                   <Button
                     onClick={flippedHorizontal.toggle}
                     primary={flippedHorizontal.value}
                     icon={<SwapHoriz />}
                   >
-                    flip horizontal
+                    Flip horizontal
                   </Button>
                   <Button
                     onClick={flippedVertical.toggle}
                     primary={flippedVertical.value}
                     icon={<SwapVert />}
                   >
-                    flip vertical
+                    Flip vertical
                   </Button>
                   <span className="spacer" />
                   <Button
@@ -342,8 +316,12 @@ export default function App() {
                   >
                     {formattedTime} / {formatTime(maxTime)}
                   </Button>
-                  <Button onClick={timer.toggle} primary={timer.playing}>
-                    {timer.playing ? <Pause /> : <PlayArrow />}
+                  <Button
+                    onClick={timer.toggle}
+                    primary={timer.playing}
+                    icon={timer.playing ? <Pause /> : <PlayArrow />}
+                  >
+                    {timer.playing ? 'Pause' : 'Play'}
                   </Button>
                   <Button onClick={timer.reset} icon={<Refresh />}>
                     Reset

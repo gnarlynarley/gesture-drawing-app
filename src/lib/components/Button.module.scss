@@ -13,6 +13,7 @@
   align-items: center;
   justify-content: center;
   gap: 0.3em;
+  line-height: 1;
 
   &.isPrimary {
     background-color: var(--color-primary);
