@@ -20,6 +20,7 @@ export default function useKeyBind(key: string, cb: () => void) {
         const normalizedKey =
           KEY_TO_KEYVALUE_MAP[ev.key] || ev.key.toLowerCase();
         if (normalizedKey === key) {
+          ev.preventDefault();
           cbRef.current();
         }
       },
