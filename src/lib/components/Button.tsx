@@ -6,6 +6,7 @@ type Props = React.PropsWithChildren<{
   onClick?: () => void;
   type?: 'submit' | 'reset' | 'button';
   loading?: boolean;
+  icon?: JSX.Element;
 }>;
 
 export default function Button({
@@ -14,6 +15,7 @@ export default function Button({
   primary,
   children,
   loading,
+  icon,
 }: Props) {
   return (
     <button
@@ -22,6 +24,7 @@ export default function Button({
       onClick={() => onClick?.()}
     >
       {loading && <span className={$.spinner} />}
+      {icon && <span className={$.inner}>{icon}</span>}
       <span className={$.inner}>{children}</span>
     </button>
   );

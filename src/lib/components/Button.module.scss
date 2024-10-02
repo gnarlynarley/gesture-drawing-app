@@ -1,13 +1,18 @@
 .button {
   position: relative;
   background-color: var(--color-accent);
-  padding: 0.4em 0.5em;
+  padding: 0 0.5em;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   transition: background-color 0.3s;
   flex-shrink: 0;
+  height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
 
   &.isPrimary {
     background-color: var(--color-primary);
@@ -38,6 +43,8 @@
 }
 
 .inner {
+  line-height: 1;
+
   .button.isLoading & {
     opacity: 0;
   }

@@ -1,7 +1,22 @@
+import React from 'react';
+import {
+  Pause,
+  PlayArrow,
+  SkipNext,
+  FastForward,
+  Folder,
+  Replay,
+  Dashboard,
+  Image,
+  Palette,
+  SwapHoriz,
+  SwapVert,
+  Timer,
+  Refresh,
+} from '@material-ui/icons';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readDir, readFile } from '@tauri-apps/plugin-fs';
 import * as path from '@tauri-apps/api/path';
-import React from 'react';
 import cx from './lib/utils/cx';
 import Button from './lib/components/Button';
 import ProgressBar from './lib/components/ProgressBar';
@@ -196,7 +211,6 @@ export default function App() {
     switch (view) {
       case 'app':
         setView('app');
-        timer.play();
         break;
       case 'overview':
         setView('overview');
@@ -231,9 +245,14 @@ export default function App() {
   React.useEffect(() => {
     if (autoplay.value && isOverTime) {
       nextRandomImage();
-      playDing();
     }
   }, [autoplay.value, isOverTime]);
+
+  React.useEffect(() => {
+    if (isOverTime) {
+      playDing();
+    }
+  }, [isOverTime]);
 
   return (
     <>
@@ -251,7 +270,11 @@ export default function App() {
       )}
       <div className={wrapperClassName}>
         <div className="toolbar">
-          <Button onClick={openFolder} loading={loading === 'directory'}>
+          <Button
+            onClick={openFolder}
+            loading={loading === 'directory'}
+            icon={<Folder />}
+          >
             {hasFilesLoaded ? 'Change directory' : 'Set directory'}
           </Button>
           {hasFilesLoaded && (
@@ -259,18 +282,21 @@ export default function App() {
               <Button
                 onClick={() => nextRandomImage()}
                 loading={loading === 'file'}
+                icon={<SkipNext />}
               >
                 Next
               </Button>
               <Button
                 onClick={() => nextRandomImage(true)}
                 loading={loading === 'file'}
+                icon={<FastForward />}
               >
                 Skip
               </Button>
               <Button
                 onClick={() => autoplay.toggle()}
                 primary={autoplay.value}
+                icon={<Replay />}
               >
                 Autoplay
               </Button>
@@ -278,6 +304,7 @@ export default function App() {
                 onClick={() =>
                   changeView(view === 'overview' ? 'app' : 'overview')
                 }
+                icon={view === 'app' ? <Dashboard /> : <Image />}
               >
                 Show {view === 'overview' ? 'Back to app' : 'Overview'}
               </Button>
@@ -286,35 +313,41 @@ export default function App() {
 
               {view === 'app' && (
                 <>
-                  <Button onClick={grayscale.toggle} primary={grayscale.value}>
+                  <Button
+                    onClick={grayscale.toggle}
+                    primary={grayscale.value}
+                    icon={<Palette />}
+                  >
                     grayscale
                   </Button>
                   <Button
                     onClick={flippedHorizontal.toggle}
                     primary={flippedHorizontal.value}
+                    icon={<SwapHoriz />}
                   >
                     flip horizontal
                   </Button>
                   <Button
                     onClick={flippedVertical.toggle}
                     primary={flippedVertical.value}
+                    icon={<SwapVert />}
                   >
                     flip vertical
                   </Button>
                   <span className="spacer" />
-                  <button
+                  <Button
                     type="button"
                     onClick={changeMaxTime}
-                    className="time"
+                    icon={<Timer />}
                   >
-                    <span>{formattedTime}</span>
-                    <span>/</span>
-                    <span onClick={changeMaxTime}>{formatTime(maxTime)}</span>
-                  </button>
-                  <Button onClick={timer.toggle} primary={timer.playing}>
-                    Play/Pause
+                    {formattedTime} / {formatTime(maxTime)}
                   </Button>
-                  <Button onClick={timer.reset}>Reset</Button>
+                  <Button onClick={timer.toggle} primary={timer.playing}>
+                    {timer.playing ? <Pause /> : <PlayArrow />}
+                  </Button>
+                  <Button onClick={timer.reset} icon={<Refresh />}>
+                    Reset
+                  </Button>
                 </>
               )}
               {view === 'overview' && (
