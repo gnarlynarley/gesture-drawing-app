@@ -27,16 +27,10 @@ const DEFAULT_SETTINGS: Settings = {
   muted: false,
 };
 
-const settingsFilePath = await join(await appConfigDir(), 'settings.json');
-const localInitialData =
-  (await exists(settingsFilePath)) &&
-  (tryParseJson(await readTextFile(settingsFilePath)) as Settings);
-const initialData: Settings = {
-  ...DEFAULT_SETTINGS,
-  ...localInitialData,
-};
+const createPath = async () => join(await appConfigDir(), 'settings.json');
 
 async function saveSettings(settings: Settings) {
+  const settingsFilePath = await createPath();
   await mkdir(await dirname(settingsFilePath), { recursive: true }).catch(() =>
     console.log('done here')
   );
@@ -45,7 +39,20 @@ async function saveSettings(settings: Settings) {
   );
 }
 
-export const store = createStore(initialData);
+export const store = createStore(DEFAULT_SETTINGS);
+
+async function bootstrapSettings() {
+  const settingsFilePath = await createPath();
+  const localInitialData =
+    (await exists(settingsFilePath)) &&
+    (tryParseJson(await readTextFile(settingsFilePath)) as Settings);
+  const initialData: Settings = {
+    ...DEFAULT_SETTINGS,
+    ...localInitialData,
+  };
+  store.set(initialData);
+}
+bootstrapSettings();
 
 store.subscribe(() => {
   saveSettings(store.get());
