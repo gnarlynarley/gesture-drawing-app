@@ -11,7 +11,7 @@ const Input = React.forwardRef<HTMLInputElement, Props>(
     return (
       <div className={$.wrapper}>
         <label htmlFor={id}>{label}</label>
-        <input id={id} ref={ref} {...rest} />
+        <input id={id} ref={ref} {...rest} className={$.input} />
       </div>
     );
   }

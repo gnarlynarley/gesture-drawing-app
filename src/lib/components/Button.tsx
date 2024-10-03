@@ -20,7 +20,12 @@ export default function Button({
   return (
     <button
       type={type}
-      className={cx($.button, primary && $.isPrimary, loading && $.isLoading)}
+      className={cx(
+        $.button,
+        primary && $.isPrimary,
+        loading && $.isLoading,
+        icon && $.hasIcon
+      )}
       onClick={() => onClick?.()}
     >
       {loading && <span className={$.spinner} />}

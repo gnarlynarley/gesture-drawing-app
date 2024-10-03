@@ -6,8 +6,10 @@ export default function useTimer() {
   const play = () => setPlaying(true);
   const pause = () => setPlaying(false);
   const toggle = () => setPlaying(!playing);
+  const [timeId, setTimeId] = React.useState(() => Math.random());
   const reset = () => {
     setTime(0);
+    setTimeId(Math.random());
   };
 
   React.useEffect(() => {
@@ -24,7 +26,7 @@ export default function useTimer() {
         clearInterval(intervalId);
       };
     }
-  }, [playing]);
+  }, [playing, timeId]);
 
   return { time, playing, toggle, reset, play, pause };
 }

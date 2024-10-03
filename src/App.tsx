@@ -15,55 +15,20 @@ import {
   Refresh,
 } from '@material-ui/icons';
 import { open } from '@tauri-apps/plugin-dialog';
-import { readDir, readFile } from '@tauri-apps/plugin-fs';
+import { readFile } from '@tauri-apps/plugin-fs';
 import * as path from '@tauri-apps/api/path';
 import cx from './lib/utils/cx';
 import Button from './lib/components/Button';
 import ProgressBar from './lib/components/ProgressBar';
-import Modal from './lib/components/Modal';
-import Input from './lib/components/Input';
-import './App.scss';
 import useKeyBind from './lib/hooks/useKeyBind';
 import playDing from './lib/utils/playDing';
 import useTimer from './lib/hooks/useTimer';
-
-interface FileEntry {
-  pathname: string;
-  name: string;
-}
-
-async function recursiveFileRead(
-  pathname: string,
-  files: string[] = []
-): Promise<FileEntry[]> {
-  try {
-    const entries = await readDir(pathname);
-    const promises = await Promise.all(
-      entries.flatMap(async (entry): Promise<FileEntry | FileEntry[]> => {
-        if (entry.isDirectory) {
-          return recursiveFileRead(
-            await path.join(pathname, entry.name),
-            files
-          );
-        }
-
-        if (/\.(jpg|jpeg|png|gif)$/.test(entry.name)) {
-          return {
-            pathname,
-            name: entry.name,
-          };
-        }
-
-        return [];
-      })
-    );
-
-    return promises.flat(1);
-  } catch (err) {
-    console.log(err);
-    return [];
-  }
-}
+import useSettings from './lib/hooks/useSettings';
+import ChangeMaxTimeModal from './lib/components/ChangeTimeModal';
+import './App.scss';
+import sleep from './lib/utils/sleep';
+import formatTime from './lib/utils/formatTime';
+import recursiveFileRead, { FileEntry } from './lib/utils/recursiveFileRead';
 
 function useSetting() {
   const [value, setValue] = React.useState(false);
@@ -72,53 +37,19 @@ function useSetting() {
   return { value, toggle };
 }
 
-function formatTime(time: number) {
-  const seconds = time % 60;
-  const minutes = Math.floor(time / 60);
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
-
-function ChangeMaxTimeModal({
-  initialMaxTime,
-  onSubmit,
-  onCancel,
-}: {
-  initialMaxTime: number;
-  onSubmit(value: number): void;
-  onCancel(): void;
-}) {
-  const inputRef = React.useRef<HTMLInputElement>(null);
-
-  return (
-    <Modal
-      title="Change time duration"
-      onSubmit={() => onSubmit(inputRef.current!.valueAsNumber)}
-      onCancel={onCancel}
-    >
-      <Input
-        type="number"
-        ref={inputRef}
-        label="Time duration (in seconds)"
-        defaultValue={initialMaxTime}
-      />
-    </Modal>
-  );
-}
-
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export default function App() {
+  const {
+    settings: { time, lastOpenedDirectory },
+    setSetting,
+  } = useSettings();
   const [view, setView] = React.useState<'app' | 'intermission' | 'overview'>(
     'app'
   );
   const [loading, setLoading] = React.useState<false | 'directory' | 'file'>(
     false
   );
-  const [showMaxTimeModal, setShowMaxTimeModal] = React.useState(false);
+  const [showTimeModal, setShowTimeModal] = React.useState(false);
   const [intermissionSeconds, setIntermissionSeconds] = React.useState(0);
-  const [maxTime, setMaxTime] = React.useState(120);
   const [files, setFiles] = React.useState<FileEntry[]>([]);
   const [history, setHistory] = React.useState<string[]>([]);
   const [imageSrc, setImageSrc] = React.useState<string | null>(null);
@@ -127,14 +58,14 @@ export default function App() {
   const flippedHorizontal = useSetting();
   const flippedVertical = useSetting();
   const timer = useTimer();
-  const isOverTime = timer.time >= maxTime;
+  const isOverTime = timer.time >= time;
   const hasFilesLoaded = files.length > 0;
   const formattedTime = isOverTime
     ? formatTime(timer.time)
-    : formatTime(maxTime - timer.time);
+    : formatTime(time - timer.time);
 
   const changeMaxTime = () => {
-    setShowMaxTimeModal(true);
+    setShowTimeModal(true);
   };
 
   const nextRandomImage = async (skip = false, _files = files) => {
@@ -198,13 +129,33 @@ export default function App() {
       setLoading('directory');
       const selected = await open({ directory: true });
       if (!selected) return;
-      const files = await recursiveFileRead(selected);
-      setFiles(files);
-      nextRandomImage(false, files);
+      setSetting('lastOpenedDirectory', selected);
     } finally {
       setLoading(false);
     }
   };
+
+  React.useEffect(() => {
+    let active = true;
+    console.log('lastOpenedDirectory::', lastOpenedDirectory);
+    if (lastOpenedDirectory) {
+      setLoading('directory');
+      console.log('loading', lastOpenedDirectory);
+      recursiveFileRead(lastOpenedDirectory).then((files) => {
+        if (!active) return;
+        setFiles(files);
+        nextRandomImage(false, files);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+      setFiles([]);
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [lastOpenedDirectory]);
 
   const wrapperClassName = cx(
     'wrapper',
@@ -230,15 +181,15 @@ export default function App() {
 
   return (
     <>
-      {showMaxTimeModal && (
+      {showTimeModal && (
         <ChangeMaxTimeModal
-          initialMaxTime={maxTime}
+          initialMaxTime={time}
           onSubmit={(value) => {
-            setShowMaxTimeModal(false);
-            setMaxTime(value);
+            setShowTimeModal(false);
+            setSetting('time', value);
           }}
           onCancel={() => {
-            setShowMaxTimeModal(false);
+            setShowTimeModal(false);
           }}
         />
       )}
@@ -280,7 +231,7 @@ export default function App() {
                 }
                 icon={view === 'app' ? <Dashboard /> : <Image />}
               >
-                Show {view === 'overview' ? 'Back to app' : 'Overview'}
+                {view === 'overview' ? 'Back to app' : 'Overview'}
               </Button>
 
               <span className="divider" />
@@ -308,13 +259,16 @@ export default function App() {
                   >
                     Flip vertical
                   </Button>
+
                   <span className="spacer" />
+                  <span className="divider" />
+
                   <Button
                     type="button"
                     onClick={changeMaxTime}
                     icon={<Timer />}
                   >
-                    {formattedTime} / {formatTime(maxTime)}
+                    {formattedTime} / {formatTime(time)}
                   </Button>
                   <Button
                     onClick={timer.toggle}
@@ -354,7 +308,7 @@ export default function App() {
         </div>
 
         <div className="progress-bar">
-          <ProgressBar active={timer.playing} progress={timer.time / maxTime} />
+          <ProgressBar active={timer.playing} progress={timer.time / time} />
         </div>
       </div>
     </>

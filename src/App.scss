@@ -29,6 +29,7 @@
   background: var(--color-background-300);
   padding: 1em;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  overflow: auto;
 
   .divider {
     height: 1em;
@@ -62,8 +63,10 @@
 .overview {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
+  align-items: start;
   gap: var(--gap);
   padding: var(--gap);
+  height: 100%;
 }
 
 .image {
