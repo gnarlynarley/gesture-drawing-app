@@ -10,6 +10,7 @@ import createStore from './createStore';
 export type Settings = {
   lastOpenedDirectory: string | null;
   time: number;
+  muted: boolean;
 };
 
 function tryParseJson(value: string): unknown | null {
@@ -23,6 +24,7 @@ function tryParseJson(value: string): unknown | null {
 const DEFAULT_SETTINGS: Settings = {
   lastOpenedDirectory: null,
   time: 120,
+  muted: false,
 };
 
 const settingsFilePath = await join(await appConfigDir(), 'settings.json');

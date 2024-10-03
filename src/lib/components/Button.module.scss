@@ -19,10 +19,6 @@
     background-color: var(--color-primary);
     color: var(--color-primary-text);
   }
-
-  &.hasIcon {
-    padding-right: 0.8em;
-  }
 }
 
 .spinner {
@@ -49,6 +45,10 @@
 
 .inner {
   line-height: 1;
+
+  & + & {
+    padding-right: 0.3em;
+  }
 
   .button.isLoading & {
     opacity: 0;

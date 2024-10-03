@@ -30,7 +30,7 @@ export default function Button({
     >
       {loading && <span className={$.spinner} />}
       {icon && <span className={$.inner}>{icon}</span>}
-      <span className={$.inner}>{children}</span>
+      {children && <span className={$.inner}>{children}</span>}
     </button>
   );
 }

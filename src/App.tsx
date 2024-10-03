@@ -13,6 +13,8 @@ import {
   SwapVert,
   Timer,
   Refresh,
+  VolumeUp,
+  VolumeMute,
 } from '@material-ui/icons';
 import { open } from '@tauri-apps/plugin-dialog';
 import { readFile } from '@tauri-apps/plugin-fs';
@@ -39,7 +41,7 @@ function useSetting() {
 
 export default function App() {
   const {
-    settings: { time, lastOpenedDirectory },
+    settings: { time, lastOpenedDirectory, muted },
     setSetting,
   } = useSettings();
   const [view, setView] = React.useState<'app' | 'intermission' | 'overview'>(
@@ -174,10 +176,10 @@ export default function App() {
   }, [autoplay.value, isOverTime]);
 
   React.useEffect(() => {
-    if (isOverTime) {
+    if (isOverTime && muted === false) {
       playDing();
     }
-  }, [isOverTime]);
+  }, [isOverTime, muted]);
 
   return (
     <>
@@ -280,6 +282,11 @@ export default function App() {
                   <Button onClick={timer.reset} icon={<Refresh />}>
                     Reset
                   </Button>
+                  <Button
+                    primary={!muted}
+                    onClick={() => setSetting('muted', !muted)}
+                    icon={!muted ? <VolumeMute /> : <VolumeUp />}
+                  />
                 </>
               )}
               {view === 'overview' && (
