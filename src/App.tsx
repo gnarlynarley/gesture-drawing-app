@@ -196,7 +196,7 @@ export default function App() {
         />
       )}
       <div className={wrapperClassName}>
-        <div className="toolbar">
+        <div className="toolbar" data-tauri-drag-region>
           <Button
             onClick={openFolder}
             loading={loading === 'directory'}

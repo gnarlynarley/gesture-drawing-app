@@ -19,6 +19,10 @@
       transparent 1px
     ),
     linear-gradient(to bottom, var(--color-background-300) 1px, transparent 1px);
+
+  * {
+    user-select: none;
+  }
 }
 
 .toolbar {
@@ -27,7 +31,7 @@
   align-items: center;
   gap: var(--gap);
   background: var(--color-background-300);
-  padding: 1em;
+  padding: 2em 1em 1em;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
   overflow: auto;
 
