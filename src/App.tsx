@@ -142,7 +142,6 @@ export default function App() {
     console.log('lastOpenedDirectory::', lastOpenedDirectory);
     if (lastOpenedDirectory) {
       setLoading('directory');
-      console.log('loading', lastOpenedDirectory);
       recursiveFileRead(lastOpenedDirectory).then((files) => {
         if (!active) return;
         setFiles(files);

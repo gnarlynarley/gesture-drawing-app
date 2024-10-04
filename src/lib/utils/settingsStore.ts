@@ -31,12 +31,8 @@ const createPath = async () => join(await appConfigDir(), 'settings.json');
 
 async function saveSettings(settings: Settings) {
   const settingsFilePath = await createPath();
-  await mkdir(await dirname(settingsFilePath), { recursive: true }).catch(() =>
-    console.log('done here')
-  );
-  await writeTextFile(settingsFilePath, JSON.stringify(settings)).catch(() =>
-    console.log('done this')
-  );
+  await mkdir(await dirname(settingsFilePath), { recursive: true });
+  await writeTextFile(settingsFilePath, JSON.stringify(settings));
 }
 
 export const store = createStore(DEFAULT_SETTINGS);
@@ -62,6 +58,5 @@ export function setSetting<T extends keyof Settings>(
   key: T,
   value: Settings[T]
 ) {
-  console.log(key, value);
   store.set({ ...store.get(), [key]: value });
 }
