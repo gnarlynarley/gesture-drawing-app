@@ -9,6 +9,7 @@
   height: 100%;
   display: grid;
   grid-template:
+    'menubar' auto
     'toolbar' auto
     'content' 1fr
     'progress' auto;
@@ -19,10 +20,15 @@
       transparent 1px
     ),
     linear-gradient(to bottom, var(--color-background-300) 1px, transparent 1px);
+  border: 1px solid var(--color-background-300);
 
   * {
     user-select: none;
   }
+}
+
+.menubar {
+  grid-area: menubar;
 }
 
 .toolbar {

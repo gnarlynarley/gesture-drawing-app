@@ -185,7 +185,6 @@ export default function App() {
   return (
     <>
       <VersionModal />
-      <MenuBar />
       {showTimeModal && (
         <ChangeMaxTimeModal
           initialMaxTime={time}
@@ -199,7 +198,10 @@ export default function App() {
         />
       )}
       <div className={wrapperClassName}>
-        <div className="toolbar" data-tauri-drag-region>
+        <div className="menubar">
+          <MenuBar />
+        </div>
+        <div className="toolbar">
           <Button
             onClick={openFolder}
             loading={loading === 'directory'}
