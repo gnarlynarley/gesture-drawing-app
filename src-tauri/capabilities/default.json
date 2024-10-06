@@ -16,7 +16,14 @@
     "fs:write-all",
     {
       "identifier": "fs:scope",
-      "allow": [{ "path": "**/*" }, { "path": "$APPCONFIG/**" }]
+      "allow": [
+        {
+          "path": "**/*"
+        },
+        {
+          "path": "$APPCONFIG/**"
+        }
+      ]
     }
   ]
 }

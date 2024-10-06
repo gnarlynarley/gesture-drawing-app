@@ -3,7 +3,7 @@ import $ from './Button.module.scss';
 
 type Props = React.PropsWithChildren<{
   primary?: boolean;
-  title: string;
+  title?: string;
   onClick?: () => void;
   type?: 'submit' | 'reset' | 'button';
   loading?: boolean;

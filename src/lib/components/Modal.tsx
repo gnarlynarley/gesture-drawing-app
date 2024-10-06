@@ -7,11 +7,20 @@ type Props = React.PropsWithChildren<{
   onSubmit(): void;
   onCancel(): void;
   title: string;
+  submitLabel?: string;
+  cancelLabel?: string;
 }>;
 
 const modalContainer = document.getElementById('dialog-container')!;
 
-export default function Modal({ onSubmit, onCancel, title, children }: Props) {
+export default function Modal({
+  onSubmit,
+  onCancel,
+  title,
+  children,
+  cancelLabel = 'Cancel',
+  submitLabel = 'Submit',
+}: Props) {
   return createPortal(
     <div className={$.container}>
       <div className={$.modal}>
@@ -28,9 +37,9 @@ export default function Modal({ onSubmit, onCancel, title, children }: Props) {
           >
             {children}
             <div className={$.buttons}>
-              <Button onClick={onCancel}>Cancel</Button>
+              <Button onClick={onCancel}>{cancelLabel}</Button>
               <Button type="submit" onClick={onSubmit} primary>
-                Submit
+                {submitLabel}
               </Button>
             </div>
           </form>

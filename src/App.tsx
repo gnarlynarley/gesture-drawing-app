@@ -32,6 +32,7 @@ import sleep from './lib/utils/sleep';
 import formatTime from './lib/utils/formatTime';
 import recursiveFileRead, { FileEntry } from './lib/utils/recursiveFileRead';
 import MenuBar from './lib/components/MenuBar';
+import VersionModal from './lib/components/VersionModal';
 
 function useSetting() {
   const [value, setValue] = React.useState(false);
@@ -183,6 +184,7 @@ export default function App() {
 
   return (
     <>
+      <VersionModal />
       <MenuBar />
       {showTimeModal && (
         <ChangeMaxTimeModal

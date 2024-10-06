@@ -8,9 +8,11 @@ import {
 import createStore from './createStore';
 
 export type Settings = {
+  loaded: boolean;
   lastOpenedDirectory: string | null;
   time: number;
   muted: boolean;
+  skipVersion: string | null;
 };
 
 function tryParseJson(value: string): unknown | null {
@@ -22,9 +24,11 @@ function tryParseJson(value: string): unknown | null {
 }
 
 const DEFAULT_SETTINGS: Settings = {
+  loaded: false,
   lastOpenedDirectory: null,
   time: 120,
   muted: false,
+  skipVersion: null,
 };
 
 const createPath = async () => join(await appConfigDir(), 'settings.json');
@@ -45,6 +49,7 @@ async function bootstrapSettings() {
   const initialData: Settings = {
     ...DEFAULT_SETTINGS,
     ...localInitialData,
+    loaded: true,
   };
   store.set(initialData);
 }
