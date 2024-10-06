@@ -19,6 +19,11 @@
   margin: 0;
 }
 
+::selection {
+  background: none;
+  color: currentColor;
+}
+
 html {
   font: 16px/1.5 system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, 'Helvetica Neue', Arial, sans-serif;

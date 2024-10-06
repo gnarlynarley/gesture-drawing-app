@@ -31,8 +31,7 @@
   align-items: center;
   gap: var(--gap);
   background: var(--color-background-300);
-  padding: 2em 1em 1em;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  padding: 1em;
   overflow: auto;
 
   .divider {
@@ -53,6 +52,12 @@
 
     .is-over-time & {
       color: red;
+    }
+  }
+  .text {
+    @media screen and (max-width: 1500px) {
+      display: none;
+      visibility: hidden;
     }
   }
 }

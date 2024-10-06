@@ -12,8 +12,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.3em;
   line-height: 1;
+
+  &:hover {
+    filter: brightness(110%);
+    translate: 0 -1px;
+    box-shadow: 0 1px 3px rgba(black, 0.4);
+  }
+
+  &:active {
+    translate: 0 0;
+    box-shadow: none;
+  }
 
   &.isPrimary {
     background-color: var(--color-primary);
@@ -45,10 +55,6 @@
 
 .inner {
   line-height: 1;
-
-  & + & {
-    padding-right: 0.3em;
-  }
 
   .button.isLoading & {
     opacity: 0;

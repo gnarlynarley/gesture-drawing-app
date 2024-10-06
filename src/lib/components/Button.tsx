@@ -3,6 +3,7 @@ import $ from './Button.module.scss';
 
 type Props = React.PropsWithChildren<{
   primary?: boolean;
+  title: string;
   onClick?: () => void;
   type?: 'submit' | 'reset' | 'button';
   loading?: boolean;
@@ -11,6 +12,7 @@ type Props = React.PropsWithChildren<{
 
 export default function Button({
   type = 'button',
+  title,
   onClick,
   primary,
   children,
@@ -19,6 +21,7 @@ export default function Button({
 }: Props) {
   return (
     <button
+      title={title}
       type={type}
       className={cx(
         $.button,

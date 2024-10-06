@@ -31,6 +31,7 @@ import './App.scss';
 import sleep from './lib/utils/sleep';
 import formatTime from './lib/utils/formatTime';
 import recursiveFileRead, { FileEntry } from './lib/utils/recursiveFileRead';
+import MenuBar from './lib/components/MenuBar';
 
 function useSetting() {
   const [value, setValue] = React.useState(false);
@@ -182,6 +183,7 @@ export default function App() {
 
   return (
     <>
+      <MenuBar />
       {showTimeModal && (
         <ChangeMaxTimeModal
           initialMaxTime={time}
@@ -200,8 +202,11 @@ export default function App() {
             onClick={openFolder}
             loading={loading === 'directory'}
             icon={<Folder />}
+            title="Directory"
           >
-            {hasFilesLoaded ? 'Change directory' : 'Set directory'}
+            <span className="text">
+              {hasFilesLoaded ? 'Change directory' : 'Set directory'}
+            </span>
           </Button>
           {hasFilesLoaded && (
             <>
@@ -209,30 +214,36 @@ export default function App() {
                 onClick={() => nextRandomImage()}
                 loading={loading === 'file'}
                 icon={<SkipNext />}
+                title="Next"
               >
-                Next
+                <span className="text">Next</span>
               </Button>
               <Button
                 onClick={() => nextRandomImage(true)}
                 loading={loading === 'file'}
                 icon={<FastForward />}
+                title="Skip"
               >
-                Skip
+                <span className="text">Skip</span>
               </Button>
               <Button
                 onClick={() => autoplay.toggle()}
                 primary={autoplay.value}
                 icon={<Replay />}
+                title="Autoplay"
               >
-                Autoplay
+                <span className="text">Autoplay</span>
               </Button>
               <Button
                 onClick={() =>
                   changeView(view === 'overview' ? 'app' : 'overview')
                 }
                 icon={view === 'app' ? <Dashboard /> : <Image />}
+                title="View overview"
               >
-                {view === 'overview' ? 'Back to app' : 'Overview'}
+                <span className="text">
+                  {view === 'overview' ? 'Back to app' : 'Overview'}
+                </span>
               </Button>
 
               <span className="divider" />
@@ -243,22 +254,25 @@ export default function App() {
                     onClick={grayscale.toggle}
                     primary={grayscale.value}
                     icon={<Palette />}
+                    title="Grayscale toggle"
                   >
-                    Grayscale
+                    <span className="text">Grayscale</span>
                   </Button>
                   <Button
                     onClick={flippedHorizontal.toggle}
                     primary={flippedHorizontal.value}
                     icon={<SwapHoriz />}
+                    title="Flip horizontal"
                   >
-                    Flip horizontal
+                    <span className="text">Flip horizontal</span>
                   </Button>
                   <Button
                     onClick={flippedVertical.toggle}
                     primary={flippedVertical.value}
                     icon={<SwapVert />}
+                    title="Flip vertical"
                   >
-                    Flip vertical
+                    <span className="text">Flip vertical</span>
                   </Button>
 
                   <span className="spacer" />
@@ -268,28 +282,41 @@ export default function App() {
                     type="button"
                     onClick={changeMaxTime}
                     icon={<Timer />}
+                    title="Change time"
                   >
-                    {formattedTime} / {formatTime(time)}
+                    <span className="text">
+                      {formattedTime} / {formatTime(time)}
+                    </span>
                   </Button>
                   <Button
                     onClick={timer.toggle}
                     primary={timer.playing}
                     icon={timer.playing ? <Pause /> : <PlayArrow />}
+                    title="Toggle play"
                   >
-                    {timer.playing ? 'Pause' : 'Play'}
+                    <span className="text">
+                      {timer.playing ? 'Pause' : 'Play'}
+                    </span>
                   </Button>
-                  <Button onClick={timer.reset} icon={<Refresh />}>
-                    Reset
+                  <Button
+                    onClick={timer.reset}
+                    icon={<Refresh />}
+                    title="Reset timer"
+                  >
+                    <span className="text">Reset</span>
                   </Button>
                   <Button
                     primary={!muted}
                     onClick={() => setSetting('muted', !muted)}
                     icon={!muted ? <VolumeMute /> : <VolumeUp />}
+                    title="Toggle volume"
                   />
                 </>
               )}
               {view === 'overview' && (
-                <Button onClick={() => setHistory([])}>Clear history</Button>
+                <Button onClick={() => setHistory([])} title="Clear history">
+                  <span className="text">Clear history</span>
+                </Button>
               )}
             </>
           )}

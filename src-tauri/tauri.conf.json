@@ -15,8 +15,8 @@
         "title": "Gesture drawing",
         "resizable": true,
         "maximized": true,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": true
+        "hiddenTitle": true,
+        "decorations": false
       }
     ],
     "security": {
