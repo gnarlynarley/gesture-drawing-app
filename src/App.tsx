@@ -33,8 +33,9 @@ import formatTime from './lib/utils/formatTime';
 import recursiveFileRead, { FileEntry } from './lib/utils/recursiveFileRead';
 import MenuBar from './lib/components/MenuBar';
 import VersionModal from './lib/components/VersionModal';
-import useValueRef from './lib/hooks/useValueRef';
 import OverViewPage from './lib/components/OverviewPage';
+import { ImageItem } from './lib/models';
+import createId from './lib/utils/createId';
 
 function useSetting() {
   const [value, setValue] = React.useState(false);
@@ -57,20 +58,23 @@ export default function App() {
   const [showTimeModal, setShowTimeModal] = React.useState(false);
   const [intermissionSeconds, setIntermissionSeconds] = React.useState(0);
   const [files, setFiles] = React.useState<FileEntry[]>([]);
-  const [history, setHistory] = React.useState<string[]>([]);
-  const [imageSrc, setImageSrc] = React.useState<string | null>(null);
+  const [history, setHistory] = React.useState<ImageItem[]>([]);
+  const [imageSrc, setImageSrc] = React.useState<ImageItem | null>(null);
   const autoplay = useSetting();
   const grayscale = useSetting();
   const flippedHorizontal = useSetting();
   const flippedVertical = useSetting();
   const timer = useTimer();
   const isOverTime = timer.time >= time;
-  const isOverTimeRef = useValueRef(isOverTime);
-  const isMutedRef = useValueRef(muted);
   const hasFilesLoaded = files.length > 0;
   const formattedTime = isOverTime
     ? formatTime(timer.time)
     : formatTime(time - timer.time);
+  const historyTime = React.useMemo(
+    () => history.reduce((acc, item) => acc + (item.time ?? 0), 0),
+    [history]
+  );
+  const totalTime = timer.time + historyTime;
 
   const changeMaxTime = () => {
     setShowTimeModal(true);
@@ -82,23 +86,25 @@ export default function App() {
       timer.pause();
 
       if (!skip && imageSrc) {
-        setHistory((prev) => prev.concat(imageSrc));
+        setHistory((prev) => prev.concat({ ...imageSrc, time: timer.time }));
       }
-      const [url] = await Promise.all([
-        Promise.resolve().then(async () => {
-          const randomIndex = Math.floor(Math.random() * _files.length);
-          const randomPath = _files[randomIndex];
-          if (!randomPath) return null;
-          const pathname = await path.join(
-            randomPath.pathname,
-            randomPath.name
-          );
-          const buffer = await readFile(pathname);
-          const blob = new Blob([buffer]);
-          const url = URL.createObjectURL(blob);
+      const [result] = await Promise.all([
+        Promise.resolve().then(
+          async (): Promise<{ url: string; pathname: string } | null> => {
+            const randomIndex = Math.floor(Math.random() * _files.length);
+            const randomPath = _files[randomIndex];
+            if (!randomPath) return null;
+            const pathname = await path.join(
+              randomPath.pathname,
+              randomPath.name
+            );
+            const buffer = await readFile(pathname);
+            const blob = new Blob([buffer]);
+            const url = URL.createObjectURL(blob);
 
-          return url;
-        }),
+            return { url, pathname };
+          }
+        ),
         Promise.resolve().then(async () => {
           if (autoplay.value && !skip) {
             setView('intermission');
@@ -113,7 +119,16 @@ export default function App() {
       ]);
       setView('app');
       setLoading('file');
-      setImageSrc(url);
+      if (result) {
+        setImageSrc({
+          id: createId(),
+          imageSrc: result.url,
+          path: result.pathname,
+          time: null,
+        });
+      } else {
+        setImageSrc(null);
+      }
       timer.play();
     } finally {
       setLoading(false);
@@ -203,7 +218,7 @@ export default function App() {
       )}
       <div className={wrapperClassName}>
         <div className="menubar">
-          <MenuBar />
+          <MenuBar title={`Total time: ${formatTime(totalTime)}`} />
         </div>
         <div className="toolbar">
           <Button
@@ -333,7 +348,7 @@ export default function App() {
         <div className="content">
           {view === 'app' && imageSrc && (
             <div className="image">
-              <img src={imageSrc} alt="selected" />
+              <img src={imageSrc.imageSrc} alt="selected" />
             </div>
           )}
           {view === 'intermission' && (

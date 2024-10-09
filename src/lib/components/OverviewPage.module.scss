@@ -1,19 +1,21 @@
 .container {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   align-items: flex-start;
   justify-content: flex-start;
   gap: var(--gap);
   padding: var(--gap);
-  background: red;
 }
 
 .item {
-  aspect-ratio: 4/5;
+  display: flex;
+  flex-direction: column;
+  padding: var(--gap);
+  gap: var(--gap);
+  background: var(--color-background-300);
 
   img {
-    width: 100%;
-    height: 100%;
     object-fit: cover;
+    aspect-ratio: 4/5;
   }
 }
