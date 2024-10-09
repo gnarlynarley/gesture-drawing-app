@@ -33,6 +33,8 @@ import formatTime from './lib/utils/formatTime';
 import recursiveFileRead, { FileEntry } from './lib/utils/recursiveFileRead';
 import MenuBar from './lib/components/MenuBar';
 import VersionModal from './lib/components/VersionModal';
+import useValueRef from './lib/hooks/useValueRef';
+import OverViewPage from './lib/components/OverviewPage';
 
 function useSetting() {
   const [value, setValue] = React.useState(false);
@@ -63,6 +65,8 @@ export default function App() {
   const flippedVertical = useSetting();
   const timer = useTimer();
   const isOverTime = timer.time >= time;
+  const isOverTimeRef = useValueRef(isOverTime);
+  const isMutedRef = useValueRef(muted);
   const hasFilesLoaded = files.length > 0;
   const formattedTime = isOverTime
     ? formatTime(timer.time)
@@ -312,7 +316,7 @@ export default function App() {
                   <Button
                     primary={!muted}
                     onClick={() => setSetting('muted', !muted)}
-                    icon={!muted ? <VolumeMute /> : <VolumeUp />}
+                    icon={!muted ? <VolumeUp /> : <VolumeMute />}
                     title="Toggle volume"
                   />
                 </>
@@ -337,9 +341,7 @@ export default function App() {
           )}
           {view === 'overview' && (
             <div className="overview">
-              {history.map((url, i) => (
-                <img src={url} key={i} alt={`history-${i}`} />
-              ))}
+              <OverViewPage images={history} />
             </div>
           )}
         </div>

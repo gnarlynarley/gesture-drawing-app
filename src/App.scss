@@ -71,17 +71,9 @@
 .content {
   grid-area: content;
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.overview {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  align-items: start;
-  gap: var(--gap);
-  padding: var(--gap);
-  height: 100%;
+  align-items: stretch;
+  justify-content: stretch;
+  overflow: auto;
 }
 
 .image {
