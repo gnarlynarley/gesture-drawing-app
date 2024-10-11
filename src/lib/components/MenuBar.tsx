@@ -26,7 +26,7 @@ export default function MenuBar({ title }: Props) {
           <span>{title}</span>
         </div>
       )}
-      <div className={$.spacer} />
+
       <button className={$.button} type="button" onClick={minimize}>
         <Minimize />
       </button>
