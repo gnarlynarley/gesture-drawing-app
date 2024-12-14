@@ -27,15 +27,15 @@ import playDing from './lib/utils/playDing';
 import useTimer from './lib/hooks/useTimer';
 import useSettings from './lib/hooks/useSettings';
 import ChangeMaxTimeModal from './lib/components/ChangeTimeModal';
-import './App.scss';
 import sleep from './lib/utils/sleep';
 import formatTime from './lib/utils/formatTime';
 import recursiveFileRead, { FileEntry } from './lib/utils/recursiveFileRead';
-import MenuBar from './lib/components/MenuBar';
 import VersionModal from './lib/components/VersionModal';
 import OverViewPage from './lib/components/OverviewPage';
 import { ImageItem } from './lib/models';
 import createId from './lib/utils/createId';
+import PageLayout from './lib/components/PageLayout';
+import $ from './App.module.scss';
 
 function useSetting() {
   const [value, setValue] = React.useState(false);
@@ -179,12 +179,11 @@ export default function App() {
     };
   }, [lastOpenedDirectory]);
 
-  const wrapperClassName = cx(
-    'wrapper',
-    grayscale.value && 'is-grayscale',
-    flippedHorizontal.value && 'is-flipped-horizontal',
-    flippedVertical.value && 'is-flipped-vertical',
-    isOverTime && 'is-over-time'
+  const imageClassName = cx(
+    $.image,
+    grayscale.value && $.isGrayscale,
+    flippedHorizontal.value && $.isFlippedHorizontal,
+    flippedVertical.value && $.isFlippedVertical
   );
 
   useKeyBind('spacebar', () => timer.toggle());
@@ -204,6 +203,153 @@ export default function App() {
   return (
     <>
       <VersionModal />
+      <PageLayout
+        title={`Total time: ${formatTime(totalTime)}`}
+        historyCount={history.length}
+        buttons={
+          <>
+            <Button
+              onClick={openFolder}
+              loading={loading === 'directory'}
+              icon={<Folder />}
+              title="Directory"
+            >
+              <span className={$.text}>
+                {hasFilesLoaded ? 'Change directory' : 'Set directory'}
+              </span>
+            </Button>
+
+            <Button
+              onClick={() =>
+                changeView(view === 'overview' ? 'app' : 'overview')
+              }
+              icon={view === 'app' ? <Dashboard /> : <Image />}
+              title="View overview"
+            >
+              <span className={$.text}>
+                {view === 'overview' ? 'Back to app' : 'Overview'}
+              </span>
+            </Button>
+
+            {view === 'overview' && (
+              <Button onClick={() => setHistory([])} title="Clear history">
+                <span className={$.text}>Clear history</span>
+              </Button>
+            )}
+
+            {hasFilesLoaded && view === 'app' && (
+              <>
+                <span className={$.divider} />
+                <Button
+                  onClick={() => nextRandomImage()}
+                  loading={loading === 'file'}
+                  icon={<SkipNext />}
+                  title="Next"
+                >
+                  <span className={$.text}>Next</span>
+                </Button>
+                <Button
+                  onClick={() => nextRandomImage(true)}
+                  loading={loading === 'file'}
+                  icon={<FastForward />}
+                  title="Skip"
+                >
+                  <span className={$.text}>Skip</span>
+                </Button>
+                <Button
+                  onClick={() => autoplay.toggle()}
+                  primary={autoplay.value}
+                  icon={<Replay />}
+                  title="Autoplay"
+                >
+                  <span className={$.text}>Autoplay</span>
+                </Button>
+
+                <span className={$.divider} />
+
+                {view === 'app' && (
+                  <>
+                    <Button
+                      onClick={grayscale.toggle}
+                      primary={grayscale.value}
+                      icon={<Palette />}
+                      title="Grayscale toggle"
+                    >
+                      <span className={$.text}>Grayscale</span>
+                    </Button>
+                    <Button
+                      onClick={flippedHorizontal.toggle}
+                      primary={flippedHorizontal.value}
+                      icon={<SwapHoriz />}
+                      title="Flip horizontal"
+                    >
+                      <span className={$.text}>Flip horizontal</span>
+                    </Button>
+                    <Button
+                      onClick={flippedVertical.toggle}
+                      primary={flippedVertical.value}
+                      icon={<SwapVert />}
+                      title="Flip vertical"
+                    >
+                      <span className={$.text}>Flip vertical</span>
+                    </Button>
+
+                    <span className={$.spacer} />
+                    <span className={$.divider} />
+
+                    <Button
+                      type="button"
+                      onClick={changeMaxTime}
+                      icon={<Timer />}
+                      title="Change time"
+                    >
+                      <span className={$.text}>
+                        {formattedTime} / {formatTime(time)}
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={timer.toggle}
+                      primary={timer.playing}
+                      icon={timer.playing ? <Pause /> : <PlayArrow />}
+                      title="Toggle play"
+                    >
+                      <span className={$.text}>
+                        {timer.playing ? 'Pause' : 'Play'}
+                      </span>
+                    </Button>
+                    <Button
+                      onClick={timer.reset}
+                      icon={<Refresh />}
+                      title="Reset timer"
+                    >
+                      <span className={$.text}>Reset</span>
+                    </Button>
+                    <Button
+                      primary={!muted}
+                      onClick={() => setSetting('muted', !muted)}
+                      icon={!muted ? <VolumeUp /> : <VolumeMute />}
+                      title="Toggle volume"
+                    />
+                  </>
+                )}
+              </>
+            )}
+          </>
+        }
+        footer={
+          <ProgressBar active={timer.playing} progress={timer.time / time} />
+        }
+      >
+        {view === 'app' && imageSrc && (
+          <div className={imageClassName}>
+            <img src={imageSrc.imageSrc} alt="selected" />
+          </div>
+        )}
+        {view === 'intermission' && (
+          <h1 className={$.intermission}>Next coming in {intermissionSeconds}</h1>
+        )}
+        {view === 'overview' && <OverViewPage images={history} />}
+      </PageLayout>
       {showTimeModal && (
         <ChangeMaxTimeModal
           initialMaxTime={time}
@@ -216,155 +362,6 @@ export default function App() {
           }}
         />
       )}
-      <div className={wrapperClassName}>
-        <div className="menubar">
-          <MenuBar title={`Total time: ${formatTime(totalTime)}`} />
-        </div>
-        <div className="toolbar">
-          <Button
-            onClick={openFolder}
-            loading={loading === 'directory'}
-            icon={<Folder />}
-            title="Directory"
-          >
-            <span className="text">
-              {hasFilesLoaded ? 'Change directory' : 'Set directory'}
-            </span>
-          </Button>
-          {hasFilesLoaded && (
-            <>
-              <Button
-                onClick={() => nextRandomImage()}
-                loading={loading === 'file'}
-                icon={<SkipNext />}
-                title="Next"
-              >
-                <span className="text">Next</span>
-              </Button>
-              <Button
-                onClick={() => nextRandomImage(true)}
-                loading={loading === 'file'}
-                icon={<FastForward />}
-                title="Skip"
-              >
-                <span className="text">Skip</span>
-              </Button>
-              <Button
-                onClick={() => autoplay.toggle()}
-                primary={autoplay.value}
-                icon={<Replay />}
-                title="Autoplay"
-              >
-                <span className="text">Autoplay</span>
-              </Button>
-              <Button
-                onClick={() =>
-                  changeView(view === 'overview' ? 'app' : 'overview')
-                }
-                icon={view === 'app' ? <Dashboard /> : <Image />}
-                title="View overview"
-              >
-                <span className="text">
-                  {view === 'overview' ? 'Back to app' : 'Overview'}
-                </span>
-              </Button>
-
-              <span className="divider" />
-
-              {view === 'app' && (
-                <>
-                  <Button
-                    onClick={grayscale.toggle}
-                    primary={grayscale.value}
-                    icon={<Palette />}
-                    title="Grayscale toggle"
-                  >
-                    <span className="text">Grayscale</span>
-                  </Button>
-                  <Button
-                    onClick={flippedHorizontal.toggle}
-                    primary={flippedHorizontal.value}
-                    icon={<SwapHoriz />}
-                    title="Flip horizontal"
-                  >
-                    <span className="text">Flip horizontal</span>
-                  </Button>
-                  <Button
-                    onClick={flippedVertical.toggle}
-                    primary={flippedVertical.value}
-                    icon={<SwapVert />}
-                    title="Flip vertical"
-                  >
-                    <span className="text">Flip vertical</span>
-                  </Button>
-
-                  <span className="spacer" />
-                  <span className="divider" />
-
-                  <Button
-                    type="button"
-                    onClick={changeMaxTime}
-                    icon={<Timer />}
-                    title="Change time"
-                  >
-                    <span className="text">
-                      {formattedTime} / {formatTime(time)}
-                    </span>
-                  </Button>
-                  <Button
-                    onClick={timer.toggle}
-                    primary={timer.playing}
-                    icon={timer.playing ? <Pause /> : <PlayArrow />}
-                    title="Toggle play"
-                  >
-                    <span className="text">
-                      {timer.playing ? 'Pause' : 'Play'}
-                    </span>
-                  </Button>
-                  <Button
-                    onClick={timer.reset}
-                    icon={<Refresh />}
-                    title="Reset timer"
-                  >
-                    <span className="text">Reset</span>
-                  </Button>
-                  <Button
-                    primary={!muted}
-                    onClick={() => setSetting('muted', !muted)}
-                    icon={!muted ? <VolumeUp /> : <VolumeMute />}
-                    title="Toggle volume"
-                  />
-                </>
-              )}
-              {view === 'overview' && (
-                <Button onClick={() => setHistory([])} title="Clear history">
-                  <span className="text">Clear history</span>
-                </Button>
-              )}
-            </>
-          )}
-        </div>
-
-        <div className="content">
-          {view === 'app' && imageSrc && (
-            <div className="image">
-              <img src={imageSrc.imageSrc} alt="selected" />
-            </div>
-          )}
-          {view === 'intermission' && (
-            <h1>Next coming in {intermissionSeconds}</h1>
-          )}
-          {view === 'overview' && (
-            <div className="overview">
-              <OverViewPage images={history} />
-            </div>
-          )}
-        </div>
-
-        <div className="progress-bar">
-          <ProgressBar active={timer.playing} progress={timer.time / time} />
-        </div>
-      </div>
     </>
   );
 }

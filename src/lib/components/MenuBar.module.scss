@@ -15,10 +15,16 @@
   align-items: center;
   justify-content: center;
   margin-right: auto;
+  gap: 0.5em;
 }
 
 .spacer {
   width: 100%;
+  justify-self: flex-start;
+  pointer-events: none;
+  margin-right: auto;
+  opacity: 0.5;
+  gap: 0.5em;
 }
 
 .button {

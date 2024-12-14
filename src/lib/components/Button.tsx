@@ -27,7 +27,8 @@ export default function Button({
         $.button,
         primary && $.isPrimary,
         loading && $.isLoading,
-        icon && $.hasIcon
+        icon && $.hasIcon,
+        !!children && $.hasContent
       )}
       onClick={() => onClick?.()}
     >

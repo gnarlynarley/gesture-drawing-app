@@ -4,11 +4,12 @@ import $ from './MenuBar.module.scss';
 
 type Props = {
   title?: string;
+  historyCount?: number;
 };
 
 const currentWindow = getCurrentWindow();
 
-export default function MenuBar({ title }: Props) {
+export default function MenuBar({ title, historyCount }: Props) {
   const minimize = () => {
     currentWindow.minimize();
   };
@@ -21,12 +22,13 @@ export default function MenuBar({ title }: Props) {
 
   return (
     <div data-tauri-drag-region className={$.container}>
-      {title && (
-        <div className={$.title}>
-          <span>{title}</span>
-        </div>
-      )}
-
+      <div className={$.title}>
+        {title && <span>{title}</span>}
+        {historyCount !== 0 && (
+          <div className={$.count}>Count: {historyCount}</div>
+        )}
+      </div>
+      <div className={$.spacer} />
       <button className={$.button} type="button" onClick={minimize}>
         <Minimize />
       </button>

@@ -12,8 +12,8 @@
     'menubar' auto
     'toolbar' auto
     'content' 1fr
-    'progress' auto;
-  background-size: 40px 40px;
+    'footer' auto;
+  background-size: 30px 30px;
   background-image: linear-gradient(
       to right,
       var(--color-background-300) 1px,
@@ -74,6 +74,7 @@
   align-items: stretch;
   justify-content: stretch;
   overflow: auto;
+  width: 100%;
 }
 
 .image {
@@ -108,8 +109,12 @@
   }
 }
 
-.progress-bar {
+.overview {
+  width: 100%;
+}
+
+.footer {
   padding: var(--gap);
   padding-top: 0;
-  grid-area: progress;
+  grid-area: footer;
 }
